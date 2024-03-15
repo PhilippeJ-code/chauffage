@@ -1,0 +1,20 @@
+{
+	"id" : "chauffage",
+	"name" : "chauffage",
+	"description" : "Chauffage en ON/OFF",
+	"licence" : "AGPL",
+	"author" : "PhilippeJ",
+	"require" : "3.2",
+	"category" : "wellness",
+	"hasDependency" : false,
+	"hasOwnDeamon" : false,
+	"maxDependancyInstallTime" : 0,
+	"changelog" : "https://jeedom.github.io/plugin-template/#language#/changelog",
+	"documentation" : "https://jeedom.github.io/plugin-template/#language#/",
+	"link" : {
+		"forum":"Lien vers le forum",
+		"video" : "Lien vers une video"
+	},
+	"language" : ["fr_FR"],
+	"compatibility" : ["miniplus","smart","rpi","docker","diy","mobile","v4"]
+}
