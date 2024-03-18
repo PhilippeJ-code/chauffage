@@ -436,7 +436,7 @@ class chauffage extends eqLogic
         }
         $version = jeedom::versionAlias($_version);
 
-        $obj = $this->getCmd(null, 'status');
+        $obj = $this->getCmd(null, 'status'); 
         $replace["#statut#"] = $obj->execCmd();
         $replace["#idStatut#"] = $obj->getId();
 
