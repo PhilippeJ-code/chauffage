@@ -1,12 +1,11 @@
 <?php
-  if (!isConnect('admin')) 
-  {
-	 throw new Exception('{{401 - Accès non autorisé}}');
-  }
+if (!isConnect('admin')) {
+    throw new Exception('{{401 - Accès non autorisé}}');
+}
 
-  $plugin = plugin::byId('chauffage');
-  sendVarToJS('eqType', $plugin->getId());
-  $eqLogics = eqLogic::byType($plugin->getId());
+$plugin = plugin::byId('chauffage');
+sendVarToJS('eqType', $plugin->getId());
+$eqLogics = eqLogic::byType($plugin->getId());
 
 ?>
 
@@ -32,16 +31,15 @@
 
         // Affiche la liste des équipements
         //
-        foreach ($eqLogics as $eqLogic) 
-        {
-	        $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
-	        echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
-	        echo '<img src="' . $plugin->getPathImgIcon() . '"/>';
-	        echo '<br>';
-	        echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
-	        echo '</div>';
+        foreach ($eqLogics as $eqLogic) {
+            $opacity = ($eqLogic->getIsEnable()) ? '' : 'disableCard';
+            echo '<div class="eqLogicDisplayCard cursor '.$opacity.'" data-eqLogic_id="' . $eqLogic->getId() . '">';
+            echo '<img src="' . $plugin->getPathImgIcon() . '"/>';
+            echo '<br>';
+            echo '<span class="name">' . $eqLogic->getHumanName(true, true) . '</span>';
+            echo '</div>';
         }
-      ?>
+?>
     </div>
   </div>
 
@@ -54,6 +52,10 @@
     <ul class="nav nav-tabs" role="tablist">
       <li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fa fa-arrow-circle-left"></i></a></li>
       <li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
+      <li role="presentation"><a href="#consignestab" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i>
+          {{Consignes}}</a></li>
+      <li role="presentation"><a href="#chauffagetab" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i>
+          {{Chauffage}}</a></li>
       <li role="presentation"><a href="#commandtab" aria-controls="profile" role="tab" data-toggle="tab"><i class="fa fa-list-alt"></i> {{Commandes}}</a></li>
     </ul>
     <div class="tab-content" style="height:calc(100% - 50px);overflow:auto;overflow-x: hidden;">
@@ -75,11 +77,10 @@
                 <select id="sel_object" class="eqLogicAttr form-control" data-l1key="object_id">
                   <option value="">{{Aucun}}</option>
                   <?php
-                    foreach (jeeObject::all() as $object) 
-                    {
-	                    echo '<option value="' . $object->getId() . '">' . $object->getName() . '</option>';
-                    }
-                  ?>
+              foreach (jeeObject::all() as $object) {
+                  echo '<option value="' . $object->getId() . '">' . $object->getName() . '</option>';
+              }
+?>
                 </select>
               </div>
             </div>
@@ -87,13 +88,12 @@
               <label class="col-sm-3 control-label">{{Catégorie}}</label>
               <div class="col-sm-9">
                 <?php
-                  foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) 
-                  {
-                    echo '<label class="checkbox-inline">';
-                    echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" />' . $value['name'];
-                    echo '</label>';
-                  }
-                ?>
+foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
+    echo '<label class="checkbox-inline">';
+    echo '<input type="checkbox" class="eqLogicAttr" data-l1key="category" data-l2key="' . $key . '" />' . $value['name'];
+    echo '</label>';
+}
+?>
               </div>
             </div>
 	          <div class="form-group">
@@ -107,6 +107,152 @@
           </fieldset>
         </form>
       </div>
+
+      <!--
+
+        Onglet Consignes 
+
+      -->
+      <div role="tabpanel" class="tab-pane" id="consignestab">
+
+        <form class="form-horizontal">
+          <fieldset>
+
+            <br /><br />
+
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{Consigne min (°C)}}</label>
+              <div class="col-sm-2">
+                <input type="text" class="eqLogicAttr form-control tooltips" data-l1key="configuration"
+                  data-l2key="consigne_min" placeholder="10" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{Consigne max (°C)}}</label>
+              <div class="col-sm-2">
+                <input type="text" class="eqLogicAttr form-control tooltips" data-l1key="configuration"
+                  data-l2key="consigne_max" placeholder="30" />
+              </div>
+            </div>
+
+            <div>
+              <legend>
+                {{Consignes on ?}}
+                <a class="btn btn-primary btn-xs pull-right addAction" data-type="csg_on"
+                  style="position: relative; top : 5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une
+                  action}}</a>
+              </legend>
+              <div id="div_csg_on">
+
+              </div>
+            </div>
+          </fieldset>
+        </form>
+
+        <form class="form-horizontal">
+          <fieldset>
+            <div>
+              <legend>
+                {{Consignes off ?}}
+                <a class="btn btn-primary btn-xs pull-right addAction" data-type="csg_off"
+                  style="position: relative; top : 5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une
+                  action}}</a>
+              </legend>
+              <div id="div_csg_off">
+
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+
+      <!--
+
+        Onglet Chauffage
+
+      -->
+      <div role="tabpanel" class="tab-pane" id="chauffagetab">
+        <form class="form-horizontal">
+          <fieldset>
+            <br /><br />
+
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{Température intérieure}}</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <input type="text" class="eqLogicAttr form-control tooltips roundedLeft" data-l1key="configuration"
+                    data-l2key="temperature_interieure" data-concat="1" />
+                  <span class="input-group-btn">
+                    <a class="btn btn-default listCmdInfo roundedRight"><i class="fas fa-list-alt"></i></a>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{Hystéresis min (°C)}}</label>
+              <div class="col-sm-2">
+                <input type="text" class="eqLogicAttr form-control tooltips" data-l1key="configuration"
+                  data-l2key="hysteresis_min" placeholder="1" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{Hystéresis max (°C)}}</label>
+              <div class="col-sm-2">
+                <input type="text" class="eqLogicAttr form-control tooltips" data-l1key="configuration"
+                  data-l2key="hysteresis_max" placeholder="1" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{Nombre d'essais}}
+                <sup><i class="fas fa-question-circle tooltips"
+                    title="{{Pour pallier à une erreur de transmission}}"></i></sup>
+              </label>
+              <div class="col-sm-2">
+                <input type="text" class="eqLogicAttr form-control tooltips" data-l1key="configuration"
+                  data-l2key="nombre_essais" placeholder="1" />
+              </div>
+            </div>
+
+            <form class="form-horizontal">
+              <fieldset>
+                <div>
+                  <legend>
+                    {{Actions démarrage chauffage ?}}
+                    <a class="btn btn-primary btn-xs pull-right addAction" data-type="chf_oui"
+                      style="position: relative; top : 5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une
+                      action}}</a>
+                  </legend>
+                  <div id="div_chf_oui">
+
+                  </div>
+                </div>
+              </fieldset>
+            </form>
+
+            <form class="form-horizontal">
+              <fieldset>
+                <div>
+                  <legend>
+                    {{Actions arrêt chauffage ?}}
+                    <a class="btn btn-primary btn-xs pull-right addAction" data-type="chf_non"
+                      style="position: relative; top : 5px;"><i class="fas fa-plus-circle"></i> {{Ajouter une
+                      action}}</a>
+                  </legend>
+                  <div id="div_chf_non">
+
+                  </div>
+                </div>
+              </fieldset>
+            </form>
+
+          </fieldset>
+        </form>
+      </div>
+
       <div role="tabpanel" class="tab-pane" id="commandtab">
         <a class="btn btn-success btn-sm cmdAction pull-right" data-action="add" style="margin-top:5px;"><i class="fa fa-plus-circle"></i> {{Commandes}}</a><br/><br/>
         <table id="table_cmd" class="table table-bordered table-condensed">

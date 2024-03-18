@@ -1,69 +1,265 @@
+<div class="eqLogic eqLogic-widget allowResize allowReorderCmd #custom_layout# #eqLogic_class#" data-eqType="#eqType#"
+  data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
+  data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#"
+  style="width: #width#;height: #height#;#style#">
 
-<div class="eqLogic eqLogic-widget allowResize allowReorderCmd #custom_layout# #eqLogic_class#" data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#" data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#" style="width: #width#;height: #height#;#style#">
-	<center class="widget-name">
-		<span class="warning" title="#alert_name#">
-			<i class='#alert_icon#'></i>
-		</span>
-		<span class="cmd refresh pull-right cursor" data-cmd_id="#refresh_id#">
-			<i class="fas fa-sync"></i>
-		</span>
-		<span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
-		<a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
-	</center>
-	<div class="#isVerticalAlign#">
-		<center>
-			
-		</center>
-	</div>
-	<script>
-		if ('#refresh_id#' != ''){
-			$('.eqLogic[data-eqLogic_uid=#uid#] .refresh').on('click', function () {
-				jeedom.cmd.execute({id: '#refresh_id#'});
-			});
-		}else{
-			$('.eqLogic[data-eqLogic_uid=#uid#] .refresh').remove();
-		}
-	</script>
+  <div class="classContenant#uid#" id="idResume#uid#">
+
+    <div class="classFlex#uid#">
+
+      <div class="classTuile#uid#">
+
+        <a href="#eqLink#" <span id="idNomObjet#uid#" class="cursor">#name_display#</span></a>
+
+      </div>
+
+    </div>
+    <div class="classFlex#uid#">
+
+      <div class="classTuile#uid#">
+        <img class="classStatut#uid# cursor" id="idStatutOn#uid#" src="plugins/chauffage/core/img/on.svg">
+        <img class="classStatut#uid# cursor" id="idStatutOff#uid#" src="plugins/chauffage/core/img/off.svg">
+
+        <span id="idStatutActuel#uid#"></span></br>
+
+      </div>
+
+    </div>
+
+    <div class="classFlex#uid#">
+
+      <div class="classDemiTuile#uid#">
+        <img class="classMode#uid#" id="idMode#uid#" src="plugins/chauffage/core/img/flamme.svg">
+
+        <div class="classTemperature#uid#" data-cmd_id="#idTemperature#">
+          <span id="idTemperature#uid#"></span>
+        </div>
+
+        <div class="classConsigne#uid#">
+
+          <img id="idPlus#uid#" class="classFleches#uid#" src="plugins/chauffage/core/img/plus.svg">
+          <span id="idConsigne#uid#" class="classValeurConsigne#uid#"></span>
+          <img id="idMoins#uid#" class="classFleches#uid#" src="plugins/chauffage/core/img/moins.svg">
+
+        </div>
+
+        <span class="classLibelleTuile#uid#">Chauffage</span>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
+
+<style>
+  .classContenant#uid# {
+    width: 100%;
+    height: 100%;
+    background-color: #couleurFond#;
+    border: 1px solid #ffffff;
+    border-radius: 8px;
+    color: #couleur#;
+  }
+
+  .classFlex#uid# {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .classTuile#uid# {
+    width: 96%;
+    height: 40px;
+    position: relative;
+    margin-top: 8px;
+    border: 1px solid #808080;
+    border-radius: 8px;
+  }
+
+  .classDemiTuile#uid# {
+    width: 46%;
+    height: 150px;
+    margin-top: 8px;
+    position: relative;
+    border: 1px solid #808080;
+    border-radius: 8px;
+  }
+
+  .classLibelleTuile#uid# {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    color: #808080;
+    bottom: 5px;
+  }
+
+  #idNomObjet#uid# {
+    position: absolute;
+    width: 65%;
+    top: 10px;
+    left: 50px;
+    text-align: center;
+    font-size: 14px;
+    color: #808080 !important;
+  }
+
+  .classStatut#uid# {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 3px;
+    top: 3px;
+    filter: invert(56%) sepia(0%) saturate(299%) hue-rotate(144deg) brightness(89%) contrast(94%);
+  }
+
+  .classStatut#uid#:hover {
+    filter: invert(29%) sepia(99%) saturate(1522%) hue-rotate(346deg) brightness(102%) contrast(96%);
+  }
+
+  #idStatutActuel#uid# {
+    position: absolute;
+    width: 70%;
+    top: 10px;
+    left: 30px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .classMode#uid# {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 3px;
+    top: 3px;
+    filter: invert(56%) sepia(0%) saturate(299%) hue-rotate(144deg) brightness(89%) contrast(94%);
+  }
+
+  .classTemperature#uid# {
+    position: absolute;
+    height: 30px;
+    top: 5px;
+    right: 5px;
+    text-align: right;
+    font-size: 18px;
+    color: #808080;
+  }
+
+  .classConsigne#uid# {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 130px;
+      top: 5px;
+    }
+
+    .classFleches#uid# {
+      width: 50px;
+      height: 50px;
+      filter: invert(56%) sepia(0%) saturate(299%) hue-rotate(144deg) brightness(89%) contrast(94%);
+    }
+
+    .classFleches#uid#:hover {
+      filter: invert(29%) sepia(99%) saturate(1522%) hue-rotate(346deg) brightness(102%) contrast(96%);
+    }
+
+    .classValeurConsigne#uid# {
+      width: 100%;
+      height: 30px;
+      text-align: center;
+      font-size: 30px;
+      margin-top: -8px;
+    }
+
+</style>
 
 <script type="text/javascript">
 
-  $(document).change(function(e) 
-  {
+  jeedom.cmd.update['#idStatut#'] = function (_options) {
 
-    if (e.target.dataset.eqlogic_uid === "#uid#") 
-    {
-      initDisplay#uid#();
+    if (_options.display_value == "On") {
+      $('#idStatutOn#uid#').show();
+      $('#idStatutOff#uid#').hide();
+      $('#idStatutActuel#uid#').html('Mode on');
     }
-  });
-
-  $(document).ready(function() 
-  {
-    initDisplay#uid#();
-  });
-
-  function initDisplay#uid#() 
-  {
-    var param = {};
-
-    param.uid = "#uid#";
-
-
-    initialize(param);
+    else {
+      $('#idStatutOn#uid#').hide();
+      $('#idStatutOff#uid#').show();
+      $('#idStatutActuel#uid#').html('Mode off');
+    }
   }
+  jeedom.cmd.update['#idStatut#']({ display_value: '#statut#' });
 
-  function initialize(parametres) 
-  {
-    $('body').on('cmd::update', function(_event, _options) 
-    {
-      $(_options).each(function() 
-      {
-        switch (this.cmd_id) 
-        {
-
-        }
-      });
+  $('#idStatutOn#uid#').on('click', function () {
+    jeedom.cmd.execute({
+      id: '#idStatutOff#'
     });
+  });
+
+  $('#idStatutOff#uid#').on('click', function () {
+    jeedom.cmd.execute({
+      id: '#idStatutOn#'
+    });
+  });
+
+  jeedom.cmd.update['#idTemperature#'] = function (_options) {
+    $('#idTemperature#uid#').html(Math.round(_options.display_value * 10) / 10 + '°');
   }
+  jeedom.cmd.update['#idTemperature#']({ display_value: '#temperature#' });
+
+  jeedom.cmd.update['#idMode#'] = function (_options) {
+      if (_options.display_value == "Chauffe") {
+        $('#idMode#uid#').show();
+      }
+      else {
+        $('#idMode#uid#').hide();
+      }
+    }
+    jeedom.cmd.update['#idMode#']({ display_value: '#mode#' });
+
+    jeedom.cmd.update['#idConsigne#'] = function (_options) {
+      $('#idConsigne#uid#').html(Math.round(_options.display_value * 10) / 10 + '°');
+    }
+    jeedom.cmd.update['#idConsigne#']({ display_value: '#consigne#' });
+
+    $('#idMoins#uid#').on('click', function () {
+      var min = ('#minConsigne#' == '') ? Number.MIN_VALUE : parseFloat('#minConsigne#');
+      var stepConsigne = (isNaN(parseFloat('#stepConsigne#'))) ? 0.5 : parseFloat('#stepConsigne#');
+      if (parseFloat($('#idConsigne#uid#').html()) >= min + stepConsigne) {
+        jeedom.cmd.update['#idConsigne#']({ display_value: parseFloat($('#idConsigne#uid#').html()) - stepConsigne });
+        jeedom.cmd.execute({
+          id: '#idThermostat#', value:
+            { slider: $('#idConsigne#uid#').html().replace("°", "").replace(" ", "") }
+        });
+      } else if (parseFloat($('#idConsigne#uid#').html()) > min) {
+        jeedom.cmd.update['#idConsigne#']({ display_value: min });
+        jeedom.cmd.execute({
+          id: '#idThermostat#', value:
+            { slider: $('#idConsigne#uid#').html().replace("°", "").replace(" ", "") }
+        });
+      }
+    });
+
+    $('#idPlus#uid#').on('click', function () {
+      var max = ('#maxConsigne#' == '') ? Number.MAX_VALUE : parseFloat('#maxConsigne#');
+      var stepConsigne = (isNaN(parseFloat('#stepConsigne#'))) ? 0.5 : parseFloat('#stepConsigne#');
+      if (parseFloat($('#idConsigne#uid#').html()) <= max - stepConsigne) {
+        jeedom.cmd.update['#idConsigne#']({ display_value: parseFloat($('#idConsigne#uid#').html()) + stepConsigne });
+        jeedom.cmd.execute({
+          id: '#idThermostat#', value:
+            { slider: $('#idConsigne#uid#').html().replace("°", "").replace(" ", "") }
+        });
+      } else if (parseFloat($('#idConsigne#uid#').html()) < max) {
+        jeedom.cmd.update['#idConsigne#']({ display_value: max });
+        jeedom.cmd.execute({
+          id: '#idThermostat#', value:
+            { slider: $('#idConsigne#uid#').html().replace("°", "").replace(" ", "") }
+        });
+      }
+    });
 
 </script>
