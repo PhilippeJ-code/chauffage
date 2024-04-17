@@ -120,17 +120,32 @@ class chauffage extends eqLogic
             $this->chauffe();
         } elseif ($temperature >= $consigne_max) {
             $this->pasDeChauffe();
+            $elapsed = $this->getCache('elapsed', -1);
+            if ($elapsed != -1) {
+                $this->setCache('elapsed', -1);
+                $elapsed = microtime(true) - $elapsed;
+                  
+                $diff = $temperature - $this->getCache('temperature', $temperature);
+                if ($diff >= 3) {
+                    $secondsPerDegree = $elapsed / $diff;
+                    log::add('chauffage', 'info', 'Seconds Per Degree : ' . $secondsPerDegree);
+                    $this->getCmd(null, 'secondsPerDegree')->event($secondsPerDegree);
+                }
+            }
         }
-
     }
 
     // On chauffe
     //
     public function chauffe()
     {
-        $this->getCmd(null, 'mode')->event(__('Chauffe', __FILE__));
-        $this->actionsChauffage();
-        $this->setCache('retries', $this->getConfiguration('nombre_essais', 1));
+        if ($this->getCmd(null, 'mode')->execCmd() != 'Chauffe') {
+            $this->getCmd(null, 'mode')->event(__('Chauffe', __FILE__));
+            $this->actionsChauffage();
+            $this->setCache('retries', $this->getConfiguration('nombre_essais', 1));
+            $this->setCache('elapsed', microtime(true));
+            $this->setCache('temperature', $this->getCmd(null, 'temperature')->execCmd());
+        }
     }
 
     // On exécute les actions chauffage
@@ -160,9 +175,11 @@ class chauffage extends eqLogic
     //
     public function pasDeChauffe()
     {
-        $this->getCmd(null, 'mode')->event(__('Stoppé', __FILE__));
-        $this->actionsPasDeChauffage();
-        $this->setCache('retries', $this->getConfiguration('nombre_essais', 1));
+        if ($this->getCmd(null, 'mode')->execCmd() != 'Stoppé') {
+            $this->getCmd(null, 'mode')->event(__('Stoppé', __FILE__));
+            $this->actionsPasDeChauffage();
+            $this->setCache('retries', $this->getConfiguration('nombre_essais', 1));
+        }
     }
 
     // On n'exécute les actions on ne chauffe plus
@@ -188,23 +205,93 @@ class chauffage extends eqLogic
         }
     }
 
+    public function getNextState()
+    {
+
+        try {
+            $plugin = plugin::byId('calendar');
+            if (!is_object($plugin) || $plugin->isActive() != 1) {
+                return '';
+            }
+        } catch (Exception $ex) {
+            return '';
+        }
+        if (!class_exists('calendar_event')) {
+            return '';
+        }
+
+        $mode = $this->getCmd(null, 'status_on');
+        $next = null;
+        $position = null;
+        $events = calendar_event::searchByCmd($mode->getId());
+        if (is_array($events) && count($events) > 0) {
+            foreach ($events as $event) {
+                $calendar = $event->getEqLogic();
+                $stateCalendar = $calendar->getCmd(null, 'state');
+                if ($calendar->getIsEnable() == 0 || (is_object($stateCalendar) && $stateCalendar->execCmd() != 1)) {
+                    continue;
+                }
+                foreach ($event->getCmd_param('start') as $action) {
+                    if ($action['cmd'] == '#' . $mode->getId() . '#') {
+                        $position = 'start';
+                    }
+                }
+                foreach ($event->getCmd_param('end') as $action) {
+                    if ($action['cmd'] == '#' . $mode->getId() . '#') {
+                        if ($position == 'start') {
+                            $position = null;
+                        } else {
+                            $position = 'end';
+                        }
+                    }
+                }
+                $nextOccurence = $event->nextOccurrence($position, true);
+                if ($nextOccurence['date'] != '' && ($next == null || (strtotime($next['date']) > strtotime($nextOccurence['date']) && strtotime($nextOccurence['date']) > (strtotime('now') + 120)))) {
+                    $next = array(
+                        'date' => $nextOccurence['date'],
+                        'event' => $event,
+                        'calendar_id' => $calendar->getId(),
+                        'cmd' => $mode->getId(),
+                        'type' => 'mode',
+                    );
+                }
+            }
+        }
+        return $next;
+    }
+
     public static function cron()
     {
         // Pour chacun des équipements
         //
         foreach (chauffage::byType('chauffage', true) as $chauffage) {
+
             if ($chauffage->getIsEnable() == 1) {
 
+                $nextState = $chauffage->getNextState();
+                if ($nextState != '') {
+                    $chauffage->getCmd(null, 'nextOnDate')->event($nextState['date']);
+                }
+
+                $temp = jeedom::evaluateExpression($chauffage->getConfiguration('temperature_exterieure'));
+                if (!is_numeric($temp)) {
+                    $temp = 99;
+                } else {
+                    $temp = round($temp, 1);
+                }
+
+                $chauffage->getCmd(null, 'extTemperature')->event($temp);
+
                 $retries = $chauffage->getCache('retries', 0);
+
                 if ($retries > 0) {
-                    log::add('chauffage', 'info', 'Retry : '.$retries);
 
                     $retries--;
                     $chauffage->setCache('retries', $retries);
 
                     switch ($chauffage->getCmd(null, 'mode')->execCmd()) {
                         case __('Chauffe', __FILE__):
-                            $terrarium->actionsChauffage();
+                            $chauffage->actionsChauffage();
                             break;
                         case __('Stoppé', __FILE__):
                             $chauffage->actionsPasDeChauffage();
@@ -355,6 +442,21 @@ class chauffage extends eqLogic
         $temperature->setOrder(6);
         $temperature->save();
 
+        $temperature = $this->getCmd(null, 'extTemperature');
+        if (!is_object($temperature)) {
+            $temperature = new chauffageCmd();
+            $temperature->setName(__('Température extérieure', __FILE__));
+            $temperature->setIsVisible(1);
+            $temperature->setIsHistorized(0);
+        }
+        $temperature->setEqLogic_id($this->getId());
+        $temperature->setType('info');
+        $temperature->setSubType('numeric');
+        $temperature->setLogicalId('extTemperature');
+        $temperature->setUnite('°C');
+        $temperature->setOrder(7);
+        $temperature->save();
+
         // Mode chauffage
         //
         $mode = $this->getCmd(null, 'mode');
@@ -369,8 +471,38 @@ class chauffage extends eqLogic
         $mode->setLogicalId('mode');
         $mode->setType('info');
         $mode->setSubType('string');
-        $mode->setOrder(7);
+        $mode->setOrder(8);
         $mode->save();
+
+        // Etat suivant
+        //
+        $nextOnState = $this->getCmd(null, 'nextOnDate');
+        if (!is_object($nextOnState)) {
+            $nextOnState = new chauffageCmd();
+            $nextOnState->setName(__('Etat on suivant', __FILE__));
+            $nextOnState->setIsVisible(1);
+            $nextOnState->setIsHistorized(0);
+        }
+        $nextOnState->setEqLogic_id($this->getId());
+        $nextOnState->setLogicalId('nextOnDate');
+        $nextOnState->setType('info');
+        $nextOnState->setSubType('string');
+        $nextOnState->setOrder(9);
+        $nextOnState->save();
+
+        $secondsPerDegree = $this->getCmd(null, 'secondsPerDegree');
+        if (!is_object($secondsPerDegree)) {
+            $secondsPerDegree = new chauffageCmd();
+            $secondsPerDegree->setName(__('Secondes par degré', __FILE__));
+            $secondsPerDegree->setIsVisible(1);
+            $secondsPerDegree->setIsHistorized(0);
+        }
+        $secondsPerDegree->setEqLogic_id($this->getId());
+        $secondsPerDegree->setType('info');
+        $secondsPerDegree->setSubType('numeric');
+        $secondsPerDegree->setLogicalId('secondsPerDegree');
+        $secondsPerDegree->setOrder(10);
+        $secondsPerDegree->save();
 
         if ($this->getIsEnable() == 1) {
 
@@ -436,7 +568,7 @@ class chauffage extends eqLogic
         }
         $version = jeedom::versionAlias($_version);
 
-        $obj = $this->getCmd(null, 'status'); 
+        $obj = $this->getCmd(null, 'status');
         $replace["#statut#"] = $obj->execCmd();
         $replace["#idStatut#"] = $obj->getId();
 
@@ -449,6 +581,10 @@ class chauffage extends eqLogic
         $obj = $this->getCmd(null, 'temperature');
         $replace["#temperature#"] = $obj->execCmd();
         $replace["#idTemperature#"] = $obj->getId();
+
+        $obj = $this->getCmd(null, 'extTemperature');
+        $replace["#temperatureExterieure#"] = $obj->execCmd();
+        $replace["#idTemperatureExterieure#"] = $obj->getId();
 
         $obj = $this->getCmd(null, 'mode');
         $replace["#mode#"] = $obj->execCmd();
@@ -463,6 +599,10 @@ class chauffage extends eqLogic
 
         $obj = $this->getCmd(null, 'thermostat');
         $replace["#idThermostat#"] = $obj->getId();
+
+        $obj = $this->getCmd(null, 'nextOnDate');
+        $replace["#nextOnDate#"] = $obj->execCmd();
+        $replace["#idNextOnDate#"] = $obj->getId();
 
         return template_replace($replace, getTemplate('core', $version, 'chauffage_display', 'chauffage'));
     }

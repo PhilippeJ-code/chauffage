@@ -4,7 +4,7 @@
 	"description" : "Chauffage en ON/OFF",
 	"licence" : "AGPL",
 	"author" : "PhilippeJ",
-	"require" : "3.2",
+	"require" : "4.4",
 	"category" : "wellness",
 	"hasDependency" : false,
 	"hasOwnDeamon" : false,

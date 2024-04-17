@@ -191,6 +191,19 @@ foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
             </div>
 
             <div class="form-group">
+              <label class="col-sm-2 control-label">{{Température extérieure}}</label>
+              <div class="col-sm-4">
+                <div class="input-group">
+                  <input type="text" class="eqLogicAttr form-control tooltips roundedLeft" data-l1key="configuration"
+                    data-l2key="temperature_exterieure" data-concat="1" />
+                  <span class="input-group-btn">
+                    <a class="btn btn-default listCmdInfo roundedRight"><i class="fas fa-list-alt"></i></a>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
               <label class="col-sm-2 control-label">{{Hystéresis min (°C)}}</label>
               <div class="col-sm-2">
                 <input type="text" class="eqLogicAttr form-control tooltips" data-l1key="configuration"
@@ -256,13 +269,6 @@ foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
       <div role="tabpanel" class="tab-pane" id="commandtab">
         <a class="btn btn-success btn-sm cmdAction pull-right" data-action="add" style="margin-top:5px;"><i class="fa fa-plus-circle"></i> {{Commandes}}</a><br/><br/>
         <table id="table_cmd" class="table table-bordered table-condensed">
-          <thead>
-            <tr>
-              <th>{{Nom}}</th><th>{{Type}}</th><th>{{Action}}</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
         </table>
       </div>
     </div>
