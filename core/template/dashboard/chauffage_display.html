@@ -28,11 +28,15 @@
 
     <div class="classFlex#uid#">
 
-      <div class="classDemiTuile#uid#">
+      <div class="classHauteTuile#uid#">
         <img class="classMode#uid#" id="idMode#uid#" src="plugins/chauffage/core/img/flamme.svg">
 
-        <div class="classTemperature#uid#" data-cmd_id="#idTemperature#">
+        <div class="classTemperature#uid# history cursor" data-cmd_id="#idTemperature#">
           <span id="idTemperature#uid#"></span>
+        </div>
+
+        <div class="classTemperatureExterieure#uid#" data-cmd_id="#idTemperatureExterieure#">
+          <span id="idTemperatureExterieure#uid#"></span>
         </div>
 
         <div class="classConsigne#uid#">
@@ -43,21 +47,11 @@
 
         </div>
 
+        <span id="idNextOnDate#uid#"></span>
         <span class="classLibelleTuile#uid#">Chauffage</span>
 
       </div>
 
-      <div class="classDemiTuile#uid#">
-
-        <div class="classTemperature#uid#" data-cmd_id="#idTemperatureExterieure#">
-          <span id="idTemperatureExterieure#uid#"></span>
-        </div>
-
-        <span id="idNextOnDate#uid#"></span>
-
-        <span class="classLibelleTuile#uid#">Extérieur</span>
-
-      </div>
 
     </div>
 
@@ -89,9 +83,9 @@
     border-radius: 8px;
   }
 
-  .classDemiTuile#uid# {
-    width: 46%;
-    height: 150px;
+  .classHauteTuile#uid# {
+    width: 96%;
+    height: 160px;
     margin-top: 8px;
     position: relative;
     border: 1px solid #808080;
@@ -152,6 +146,16 @@
     position: absolute;
     height: 30px;
     top: 5px;
+    left: 5px;
+    text-align: right;
+    font-size: 18px;
+    color: #808080;
+  }
+
+  .classTemperatureExterieure#uid# {
+    position: absolute;
+    height: 30px;
+    top: 5px;
     right: 5px;
     text-align: right;
     font-size: 18px;
@@ -164,9 +168,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 130px;
-    top: 5px;
+    width: 50%;
+    height: 115px;
+    top: 20px;
   }
 
   .classFleches#uid# {
@@ -189,8 +193,8 @@
 
   #idNextOnDate#uid# {
     position: absolute;
-    width: 100%;
-    text-align: center;
+    width: 96%;
+    text-align: right;
     font-size: 14px;
     color: #808080;
     top: 30px;
@@ -278,7 +282,7 @@
 
   jeedom.cmd.addUpdateFunction('#idNextOnDate#', function (_options) {
     if ((is_object(cmd = document.getElementById('idNextOnDate#uid#')))) {
-      cmd.innerHTML = _options.value;
+      cmd.innerHTML = 'Chauffe à ' + _options.value;
     }
   });
   jeedom.cmd.refreshValue([{ cmd_id: '#idNextOnDate#', value: '#nextOnDate#', display_value: '#nextOnDate#' }]);

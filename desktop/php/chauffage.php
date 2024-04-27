@@ -230,6 +230,17 @@ foreach (jeedom::getConfiguration('eqLogic:category') as $key => $value) {
               </div>
             </div>
 
+            <div class="form-group">
+              <label class="col-sm-2 control-label">{{Secondes par degré}}
+                <sup><i class="fas fa-question-circle tooltips"
+                    title="{{Pour anticiper la chauffe}}"></i></sup>
+              </label>
+              <div class="col-sm-2">
+                <input type="text" class="eqLogicAttr form-control tooltips" data-l1key="configuration"
+                  data-l2key="secondes_par_degre" placeholder="0" />
+              </div>
+            </div>
+
             <form class="form-horizontal">
               <fieldset>
                 <div>

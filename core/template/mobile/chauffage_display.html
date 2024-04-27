@@ -193,7 +193,7 @@
     text-align: center;
     font-size: 14px;
     color: #808080;
-    top: 30px;
+    top: 50px;
   }
 </style>
 
@@ -278,7 +278,7 @@
 
   jeedom.cmd.addUpdateFunction('#idNextOnDate#', function (_options) {
     if ((is_object(cmd = document.getElementById('idNextOnDate#uid#')))) {
-      cmd.innerHTML = _options.value;
+      cmd.innerHTML = 'Chauffe à ' + _options.value;
     }
   });
   jeedom.cmd.refreshValue([{ cmd_id: '#idNextOnDate#', value: '#nextOnDate#', display_value: '#nextOnDate#' }]);
