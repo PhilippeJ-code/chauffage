@@ -38,8 +38,14 @@ function eventSelectAction()
         el.value = result.human;
         jeedom.cmd.displayActionOption(el.value, '', function (html) {
             el.closest('.' + type).querySelector('.actionOptions').innerHTML= html;
-        });
-   
+            let scripts = el.closest('.' + type).querySelector('.actionOptions').querySelectorAll('script');
+            scripts.forEach(script => {
+              let newScript = document.createElement('script');
+              newScript.text = script.text;
+              document.body.appendChild(newScript);
+              script.remove();
+            });
+        });   
     });
 }
 
