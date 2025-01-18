@@ -33,6 +33,32 @@ class chauffage extends eqLogic
     //
     public function off()
     {
+        $temperature = $this->getCmd(null, 'temperature')->execCmd();
+        if (!is_numeric($temperature)) {
+            $temperature = 99;
+        }
+        $tempExterieure = jeedom::evaluateExpression($this->getConfiguration('temperature_exterieure'));
+        if (!is_numeric($tempExterieure)) {
+            $tempExterieure = 99;
+        } else {
+            $tempExterieure = round($tempExterieure, 1);
+        }
+        
+        if (($temperature != 99) && ($tempExterieure != 99)) {
+            $elapsed = $this->getCache('elapsed', -1);
+            if ($elapsed != -1) {
+                $this->setCache('elapsed', -1);
+                $elapsed = microtime(true) - $elapsed;
+
+                $diff = $temperature - $this->getCache('temperature', $temperature);
+                if ($diff >= 3) {
+                    $secondsPerDegree = $elapsed / $diff;
+                    log::add('chauffage', 'info', 'Secondes Par Degré : ' . $secondsPerDegree . ' Temp.ext : ' . $tempExterieure);
+                    $this->getCmd(null, 'secondsPerDegree')->event($secondsPerDegree);
+                }
+            }
+        }
+
         $this->getCmd(null, 'status')->event(__('Off', __FILE__));
         $this->actionsConsignesOff();
         $this->pasDeChauffe();
@@ -110,7 +136,16 @@ class chauffage extends eqLogic
             return;
         }
 
-        if ( $this->getCmd(null, 'status')->execCmd() == 'Off' ) return;
+        if ($this->getCmd(null, 'status')->execCmd() == 'Off') {
+            return;
+        }
+
+        $tempExterieure = jeedom::evaluateExpression($this->getConfiguration('temperature_exterieure'));
+        if (!is_numeric($tempExterieure)) {
+            $tempExterieure = 99;
+        } else {
+            $tempExterieure = round($tempExterieure, 1);
+        }
 
         $consigne = $this->getCmd(null, 'consigne')->execCmd();
         if (!is_numeric($consigne)) {
@@ -128,11 +163,11 @@ class chauffage extends eqLogic
             if ($elapsed != -1) {
                 $this->setCache('elapsed', -1);
                 $elapsed = microtime(true) - $elapsed;
-                  
+
                 $diff = $temperature - $this->getCache('temperature', $temperature);
                 if ($diff >= 3) {
                     $secondsPerDegree = $elapsed / $diff;
-                    log::add('chauffage', 'info', 'Seconds Per Degree : ' . $secondsPerDegree);
+                    log::add('chauffage', 'info', 'Secondes Par Degré : ' . $secondsPerDegree . ' Temp.ext : ' . $tempExterieure);
                     $this->getCmd(null, 'secondsPerDegree')->event($secondsPerDegree);
                 }
             }
@@ -301,32 +336,32 @@ class chauffage extends eqLogic
 
                 $nextState = $chauffage->getNextState();
                 $secondesParDegre = $chauffage->getConfiguration('secondes_par_degre', 0);
-                if (($nextState != '') && ($secondesParDegre > 0 ) && ($chauffage->getCmd(null, 'status')->execCmd() == 'Off')) {
-                    
-                    $nextTime = $d=strtotime($nextState['date']);
+                if (($nextState != '') && ($secondesParDegre > 0) && ($chauffage->getCmd(null, 'status')->execCmd() == 'Off')) {
+
+                    $nextTime = $d = strtotime($nextState['date']);
                     $diffTime = $nextTime - time();
 
                     $temperature = $chauffage->getCmd(null, 'temperature')->execCmd();
                     if (!is_numeric($temperature)) {
                         return;
-                    }            
+                    }
                     $consigne = $chauffage->getCmd(null, 'consigne')->execCmd();
                     if (!is_numeric($consigne)) {
                         return;
                     }
                     $diffTemp = $consigne + $chauffage->getConfiguration('hysteresis_max', 1) - $temperature;
-                    
+
                     $anticipation = $secondesParDegre * $diffTemp;
                     $nextTime -= $anticipation;
 
-                    $chauffage->getCmd(null, 'nextOnDate')->event(date("H:i",$nextTime));
+                    $chauffage->getCmd(null, 'nextOnDate')->event(date("H:i", $nextTime));
 
                     if ($diffTime < $anticipation) {
                         $chauffage->on();
                         log::add('chauffage', 'debug', 'Diff : ' . $diffTime . ' Diff T° : ' . $diffTemp . ' Anticipation : ' . $anticipation);
                     }
-                } else if ($nextState != '') {
-                    $chauffage->getCmd(null, 'nextOnDate')->event(substr($nextState['date'],11,5));
+                } elseif ($nextState != '') {
+                    $chauffage->getCmd(null, 'nextOnDate')->event(substr($nextState['date'], 11, 5));
                 }
 
             }
