@@ -184,6 +184,7 @@ class chauffage extends eqLogic
             $this->setCache('retries', $this->getConfiguration('nombre_essais', 1));
             $this->setCache('elapsed', microtime(true));
             $this->setCache('temperature', $this->getCmd(null, 'temperature')->execCmd());
+            log::add('chauffage', 'info', 'Chauffage On');
         }
     }
 
@@ -218,6 +219,7 @@ class chauffage extends eqLogic
             $this->getCmd(null, 'mode')->event(__('Stoppé', __FILE__));
             $this->actionsPasDeChauffage();
             $this->setCache('retries', $this->getConfiguration('nombre_essais', 1));
+            log::add('chauffage', 'info', 'Chauffage Off');
         }
     }
 
@@ -308,14 +310,14 @@ class chauffage extends eqLogic
             if ($chauffage->getIsEnable() == 1) {
 
 
-                $temp = jeedom::evaluateExpression($chauffage->getConfiguration('temperature_exterieure'));
-                if (!is_numeric($temp)) {
-                    $temp = 99;
+                $tempExterieure = jeedom::evaluateExpression($chauffage->getConfiguration('temperature_exterieure'));
+                if (!is_numeric($tempExterieure)) {
+                    $tempExterieure = 99;
                 } else {
-                    $temp = round($temp, 1);
+                    $tempExterieure = round($tempExterieure, 1);
                 }
 
-                $chauffage->getCmd(null, 'extTemperature')->event($temp);
+                $chauffage->getCmd(null, 'extTemperature')->event($tempExterieure);
 
                 $retries = $chauffage->getCache('retries', 0);
 
@@ -336,6 +338,7 @@ class chauffage extends eqLogic
 
                 $nextState = $chauffage->getNextState();
                 $secondesParDegre = $chauffage->getConfiguration('secondes_par_degre', 0);
+
                 if (($nextState != '') && ($secondesParDegre > 0) && ($chauffage->getCmd(null, 'status')->execCmd() == 'Off')) {
 
                     $nextTime = $d = strtotime($nextState['date']);
@@ -349,7 +352,26 @@ class chauffage extends eqLogic
                     if (!is_numeric($consigne)) {
                         return;
                     }
+                    $temperatureVisee = $consigne + $chauffage->getConfiguration('hysteresis_max', 1);
+                    $temp_sec_par_degre = $chauffage->getConfiguration('temp_sec_par_degre', 0);
+
                     $diffTemp = $consigne + $chauffage->getConfiguration('hysteresis_max', 1) - $temperature;
+
+                    // Interpolation linéaire
+                    //
+                    $xa = $temp_sec_par_degre;
+                    $ya = $secondesParDegre;
+                    $xb = $temperatureVisee;
+                    $yb = 0;
+                    $x = $tempExterieure;
+
+                    $y = ( $yb - $ya ) / ( $xb - $xa );
+                    $y = $ya + ( $x - $xa ) * $y;
+                    $secondesParDegre = $y;
+
+                    if ( $secondesParDegre < 0 ) {
+                        $secondesParDegre = 0;
+                    }
 
                     $anticipation = $secondesParDegre * $diffTemp;
                     $nextTime -= $anticipation;
